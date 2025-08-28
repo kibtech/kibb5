@@ -1,0 +1,43 @@
+MANUAL DEPLOYMENT COMMANDS FOR SCALINGO
+=====================================
+
+Step 1: Add the updated requirements.txt to git
+git add requirements.txt
+
+Step 2: Commit the changes
+git commit -m "Add missing cryptography dependency for MPesa services"
+
+Step 3: Push to Scalingo (if you have a Scalingo remote)
+git push scalingo main
+
+OR
+
+Step 3: Deploy using Scalingo CLI
+scalingo --app your-app-name deploy
+
+OR
+
+Step 3: Deploy using Scalingo CLI with specific app name
+scalingo --app kibtech deploy
+
+=====================================
+ALTERNATIVE: Using Scalingo Dashboard
+=====================================
+
+1. Go to your Scalingo dashboard
+2. Navigate to your app
+3. Go to "Deploy" tab
+4. Upload your updated code or connect your Git repository
+5. Scalingo will automatically detect the updated requirements.txt
+6. The build process will install the missing cryptography package
+
+=====================================
+VERIFY DEPLOYMENT
+=====================================
+
+After deployment, check the logs:
+scalingo --app your-app-name logs
+
+Or check in the Scalingo dashboard under the "Logs" tab.
+
+The application should start without the ModuleNotFoundError for cryptography. 

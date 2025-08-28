@@ -1,0 +1,44 @@
+MANUAL SCALINGO DEPENDENCY INSTALLATION
+======================================
+
+If requirements.txt isn't working, you can install dependencies directly:
+
+Step 1: Install cryptography package
+scalingo --app kibtech run pip install cryptography==41.0.7
+
+Step 2: Install sib_api_v3_sdk package (if missing)
+scalingo --app kibtech run pip install sib_api_v3_sdk==7.5.0
+
+Step 3: Restart the application
+scalingo --app kibtech restart
+
+Step 4: Check the logs
+scalingo --app kibtech logs
+
+======================================
+ALTERNATIVE: Using Scalingo Dashboard
+======================================
+
+1. Go to your Scalingo dashboard
+2. Navigate to your app
+3. Go to "Console" tab
+4. Run these commands one by one:
+
+   pip install cryptography==41.0.7
+   pip install sib_api_v3_sdk==7.5.0
+
+5. Go to "Overview" tab
+6. Click "Restart" button
+
+======================================
+VERIFY INSTALLATION
+======================================
+
+Check if packages are installed:
+scalingo --app kibtech run pip list | grep cryptography
+scalingo --app kibtech run pip list | grep sib_api_v3_sdk
+
+Check application logs:
+scalingo --app kibtech logs
+
+The application should start without ModuleNotFoundError. 
