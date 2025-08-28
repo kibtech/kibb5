@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wallet PIN Test Page</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .wallet-card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            background: #f9f9f9;
+        }
+        .balance {
+            font-size: 24px;
+            font-weight: bold;
+            color: #007bff;
+        }
+        .withdraw-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 10px 5px;
+        }
+        .withdraw-btn:hover {
+            background: #218838;
+        }
+        .withdraw-btn.disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+        }
+        .pin-status {
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .pin-status.set {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .pin-status.not-set {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔐 Wallet PIN Security Test</h1>
+    
+    <div class="wallet-card">
+        <h2>Wallet Overview</h2>
+        <div class="balance">KES 1,250.00</div>
+        <p>Available for withdrawal: KES 1,250.00</p>
+        
+        <div id="pin-status" class="pin-status not-set">
+            <strong>PIN Status:</strong> <span id="pin-status-text">Checking...</span>
+        </div>
+        
+        <button class="withdraw-btn" onclick="testWithdrawal()">Withdraw Funds</button>
+        <button class="withdraw-btn" onclick="testPinSetup()">Set PIN</button>
+        <button class="withdraw-btn" onclick="testPinChange()">Change PIN</button>
+        <button class="withdraw-btn" onclick="testPinVerify()">Verify PIN</button>
+    </div>
+
+    <div class="wallet-card">
+        <h2>Test Scenarios</h2>
+        <p><strong>Scenario 1:</strong> User without PIN tries to withdraw → Should show PIN setup popup</p>
+        <p><strong>Scenario 2:</strong> User with PIN tries to withdraw → Should prompt for PIN verification</p>
+        <p><strong>Scenario 3:</strong> User tries to withdraw with wrong PIN → Should show error</p>
+        <p><strong>Scenario 4:</strong> User sets PIN → Should enable withdrawal functionality</p>
+    </div>
+
+    <div class="wallet-card">
+        <h2>API Endpoints</h2>
+        <ul>
+            <li><code>GET /wallet/pin/status</code> - Check PIN status</li>
+            <li><code>POST /wallet/pin/set</code> - Set wallet PIN</li>
+            <li><code>POST /wallet/pin/change</code> - Change wallet PIN</li>
+            <li><code>POST /wallet/pin/verify</code> - Verify PIN</li>
+            <li><code>POST /wallet/withdrawals</code> - Request withdrawal (requires PIN)</li>
+        </ul>
+    </div>
+
+    <!-- Include the PIN Manager -->
+    <script src="static/js/wallet-pin-manager.js"></script>
+    
+    <script>
+        // Test functions
+        function testWithdrawal() {
+            console.log('Testing withdrawal...');
+            // This will be handled by the PIN manager
+        }
+        
+        function testPinSetup() {
+            if (window.walletPinManager) {
+                window.walletPinManager.showPinSetup();
+            } else {
+                alert('PIN Manager not loaded');
+            }
+        }
+        
+        function testPinChange() {
+            alert('PIN change functionality - requires current PIN');
+        }
+        
+        function testPinVerify() {
+            const pin = prompt('Enter PIN to verify:');
+            if (pin && window.walletPinManager) {
+                // Test PIN verification
+                fetch('/wallet/pin/verify', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ pin: pin })
+                })
+                .then(response => response.json())
+                .then(result => {
+                    if (result.verified) {
+                        alert('✅ PIN verified successfully!');
+                    } else {
+                        alert('❌ PIN verification failed: ' + result.error);
+                    }
+                })
+                .catch(error => {
+                    alert('Error: ' + error.message);
+                });
+            }
+        }
+        
+        // Update PIN status display
+        function updatePinStatusDisplay(status) {
+            const statusElement = document.getElementById('pin-status');
+            const textElement = document.getElementById('pin-status-text');
+            
+            if (status.has_wallet_pin) {
+                statusElement.className = 'pin-status set';
+                textElement.textContent = 'PIN is set ✅';
+            } else {
+                statusElement.className = 'pin-status not-set';
+                textElement.textContent = 'PIN not set - Required for withdrawals ⚠️';
+            }
+        }
+        
+        // Override the updateUI method to also update our display
+        document.addEventListener('DOMContentLoaded', function() {
+            // Wait for PIN manager to initialize
+            setTimeout(() => {
+                if (window.walletPinManager) {
+                    // Override the updateUI method
+                    const originalUpdateUI = window.walletPinManager.updateUI;
+                    window.walletPinManager.updateUI = function(status) {
+                        originalUpdateUI.call(this, status);
+                        updatePinStatusDisplay(status);
+                    };
+                    
+                    // Check initial status
+                    window.walletPinManager.checkPinStatus();
+                }
+            }, 1000);
+        });
+    </script>
+</body>
+</html> 
